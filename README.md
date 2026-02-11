@@ -1,32 +1,37 @@
-# Building-RAG-Chatbots-for-Technical-Documentation
+# Building RAG Chatbots for Technical Documentation
 
-Building RAG Chatbots for Technical Documentation
-Implement retrieval augmented generation (RAG) with LangChain to create a chatbot for answering questions about technical documentation.
+This project demonstrates the implementation of a Retrieval-Augmented Generation (RAG) chatbot capable of answering questions about technical documentation. The proof-of-concept is a context-aware car assistant that explains dashboard warnings using a car manual.
 
+## Project Overview
 
-Project Description
-You'll create a context-aware chatbot by integrating a car manual with an LLM using LangChain and Retrieval Augmented Generation (RAG). The goal is to create a car assistant that can explain dashboard warnings and recommend actions while driving. Say goodbye to boring manuals!
-Project Instructions
-The car manual HTML document has been loaded for you as car_docs. Using Retrieval Augmented Generation (RAG) to make OpenAI's gpt-4o-mini aware of the contents of car_docs, answer the following user query:
+### Purpose
 
-"The Gasoline Particular Filter Full warning has appeared. What does this mean and what should I do about it?"
+The primary goal of this project is to build an intelligent chatbot that can understand and answer user queries based on a specific set of documents. It showcases how to augment a large language model with external knowledge, enabling it to provide accurate answers from a given technical manual instead of relying solely on its pre-trained data.
 
-Store the answer to the user query in the variable answer.
-Submissions and help
-How to approach the project
-Steps to complete
+### What It Achieves
 
-1
-Split the document
-2
-Store the embeddings
-3
-Create a retriever
+This project successfully builds a complete, offline RAG pipeline that:
+- Ingests and processes technical documentation from an HTML file.
+- Generates vector embeddings from the document content and stores them for efficient retrieval.
+- Responds to a user's natural language question with a concise and relevant answer sourced from the document.
+- Converts the generated text answer into speech, demonstrating a use-case for a hands-free interface.
 
-![A car dashboard with lots of new technical features.](images/dashboard.jpg)
+## Real-World Applications
 
-You're working for a well-known car manufacturer who is looking at implementing LLMs into vehicles to provide guidance to drivers. You've been asked to experiment with integrating car manuals with an LLM to create a context-aware chatbot. They hope that this context-aware LLM can be hooked up to a text-to-speech software to read the model's response aloud.
+This technology can be adapted for numerous real-world scenarios:
 
-As a proof of concept, you'll integrate several pages from a car manual that contains car warning messages and their meanings and recommended actions. This particular manual, stored as an HTML file, `mg-zs-warning-messages.html`, is from an MG ZS automobile, a compact SUV. Armed with your newfound knowledge of LLMs and LangChain, you'll implement Retrieval Augmented Generation (RAG) to create the context-aware chatbot.
+-   **In-Vehicle Assistants**: Provide drivers with hands-free access to information about their vehicle, from warning lights to feature explanations.
+-   **Customer Support Automation**: Power chatbots that can answer customer questions by drawing from product manuals and knowledge bases, reducing wait times.
+-   **Corporate Knowledge Management**: Enable employees to quickly search through internal documentation, reports, and wikis.
+-   **Educational Tools**: Create interactive study aids that help students understand complex topics by answering questions based on textbook material.
 
-**Note: Although we'll be using the OpenAI API in this project, you do not need to specify an API key.**
+## Technology Stack
+
+This project utilizes open-source and local technologies to ensure privacy and cost-effectiveness.
+
+-   **Core Framework**: **LangChain** is used to orchestrate the entire RAG pipeline, connecting the different components in a modular way.
+-   **Language Model (LLM)**: **`google/flan-t5-base`**, a model from Hugging Face, runs locally for answer generation. This avoids reliance on external APIs and associated costs.
+-   **Embedding Model**: **`sentence-transformers/all-MiniLM-L6-v2`** is used for creating text embeddings. Its efficiency makes it suitable for running on local CPU.
+-   **Vector Store**: **Chroma DB** serves as the vector database to store and retrieve document embeddings quickly.
+-   **Document Loader**: **UnstructuredHTMLLoader** is used to parse the content from the source HTML file.
+-   **Text-to-Speech**: **pyttsx3** provides the functionality to convert the chatbot's text response into audible speech.
