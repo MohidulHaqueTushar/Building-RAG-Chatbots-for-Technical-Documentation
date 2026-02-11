@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Manual Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0056b3;
+            text-align: center;
+        }
+        form {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response-box {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 100px;
+            margin-top: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 10px;
+            font-style: italic;
+            color: #666;
+        }
+        audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Car Manual Assistant</h1>
+        <form id="question-form">
+            <input type="text" id="user-question" placeholder="Ask a question about your car manual..." required>
+            <button type="submit">Ask</button>
+        </form>
+        <div class="response-box" id="response-box">
+            <p>Your answers will appear here.</p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('question-form');
+        const userQuestionInput = document.getElementById('user-question');
+        const responseBox = document.getElementById('response-box');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            const question = userQuestionInput.value.trim();
+            if (!question) {
+                alert('Please enter a question.');
+                return;
+            }
+
+            responseBox.innerHTML = '<p class="loading">Thinking...</p>'; // Show loading indicator
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: question }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Display text answer
+                responseBox.innerHTML = `<p>${data.answer_text}</p>`;
+
+                // Add audio player if audio_url is present
+                if (data.audio_url) {
+                    const audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.autoplay = true; // Autoplay audio once loaded
+                    audio.src = data.audio_url;
+                    audio.type = 'audio/wav'; // Coqui TTS typically outputs WAV
+                    responseBox.appendChild(audio);
+                } else {
+                    responseBox.innerHTML += '<p style="color:red;">Audio generation failed.</p>';
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                responseBox.innerHTML = `<p style="color: red;">Error: Could not get a response. ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
