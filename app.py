@@ -1,6 +1,7 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 import uuid
+from collections import deque
 from flask import Flask, request, jsonify, render_template
 from TTS.api import TTS
 
@@ -14,8 +15,11 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.llms import HuggingFacePipeline
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 
+from collections import deque
+
 app = Flask(__name__)
-last_audio_filepath = None # To track the last generated audio file
+# Keep track of the last 5 generated audio files
+recent_audio_files = deque(maxlen=5)
 
 # --- RAG Chain Setup (from prototype.ipynb) ---
 # Load the HTML as a LangChain document loader
@@ -83,7 +87,6 @@ def index():
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    global last_audio_filepath
     user_question = request.json.get("question")
     if not user_question:
         return jsonify({"error": "No question provided"}), 400
@@ -98,13 +101,16 @@ def ask():
 
         audio_url = None
         if tts:
-            # Clean up the previous audio file if it exists
-            if last_audio_filepath and os.path.exists(last_audio_filepath):
-                try:
-                    os.remove(last_audio_filepath)
-                except Exception as e:
-                    print(f"Error deleting old audio file: {e}")
-                    
+            # If the deque is full, the oldest file path is about to be evicted.
+            # We get its path and delete the file from disk.
+            if len(recent_audio_files) == recent_audio_files.maxlen:
+                oldest_file = recent_audio_files[0]
+                if os.path.exists(oldest_file):
+                    try:
+                        os.remove(oldest_file)
+                    except Exception as e:
+                        print(f"Error deleting oldest audio file: {e}")
+
             # Generate unique filename for audio
             audio_filename = f"response_{uuid.uuid4()}.wav"
             audio_filepath = os.path.join(app.static_folder, "audio", audio_filename)
@@ -115,7 +121,10 @@ def ask():
             # Generate audio
             tts.tts_to_file(text=answer_text, file_path=audio_filepath)
             audio_url = f"/static/audio/{audio_filename}"
-            last_audio_filepath = audio_filepath # Save the path of the new file
+            
+            # Add the new file to our tracking list.
+            # If the deque was full, this automatically evicts the oldest path from the deque.
+            recent_audio_files.append(audio_filepath)
         else:
             print("TTS model not initialized. Skipping audio generation.")
 

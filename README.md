@@ -58,6 +58,8 @@ Open your web browser and navigate to the URL provided in the terminal (e.g., `h
 
 ## Interface Functionality
 
+![Interface Screenshot](pic/inference.PNG)
+
 The web interface provides a simple and intuitive way to interact with the RAG chatbot:
 
 -   **Question Input**: A text box where you can type your questions about the car manual.
